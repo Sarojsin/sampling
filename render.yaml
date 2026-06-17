@@ -1,15 +1,17 @@
 databases:
+  # STEP 1: Define the PostgreSQL Database
   - name: navya-db
     databaseName: navya_db
     user: navya_user
-    plan: free # Optional: specifies the free tier
+    plan: free 
 
 services:
-  # 1. Backend (FastAPI)
+  # STEP 2: Deploy the Backend (FastAPI)
   - type: web
     name: navya-backend
     env: python
     buildCommand: pip install -r requirements.txt
+    # Use gunicorn with uvicorn workers for production stability
     startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
@@ -17,12 +19,14 @@ services:
           name: navya-db
           property: connectionString
 
-  # 2. Frontend (React)
+  # STEP 3: Deploy the Frontend (React Static Site)
   - type: static
     name: navya-frontend
     env: static
+    # rootContext tells Render to build from the /frontend folder
     rootContext: frontend
     buildCommand: npm install && npm run build
+    # publishPath is relative to the rootContext (frontend/build)
     publishPath: build
     envVars:
       - key: REACT_APP_API_URL
