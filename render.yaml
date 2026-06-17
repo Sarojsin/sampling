@@ -18,7 +18,7 @@ services:
           property: connectionString
 
   # 2. Frontend (React)
-  - type: web
+  - type: static
     name: navya-frontend
     env: static
     rootContext: frontend
