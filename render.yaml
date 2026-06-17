@@ -1,11 +1,11 @@
-services:
-  # 1. Database
-  - type: database
-    name: navya-db
+databases:
+  - name: navya-db
     databaseName: navya_db
     user: navya_user
+    plan: free # Optional: specifies the free tier
 
-  # 2. Backend (FastAPI)
+services:
+  # 1. Backend (FastAPI)
   - type: web
     name: navya-backend
     env: python
@@ -17,7 +17,7 @@ services:
           name: navya-db
           property: connectionString
 
-  # 3. Frontend (React)
+  # 2. Frontend (React)
   - type: web
     name: navya-frontend
     env: static
