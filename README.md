@@ -7,43 +7,46 @@ This repository contains a full-stack medical survey application built with Fast
 - `/frontend` - React application.
 - `render.yaml` - Infrastructure-as-Code for Render deployment.
 
+## Why `app.py` exists
+Render's Python web service builder falls back to `gunicorn app:app` when it cannot confirm the custom run command from `render.yaml` (`app.py` is the module name in that fallback). To guarantee the backend starts reliably, this repo includes a small shim:
+- `app.py` imports the FastAPI instance from `main.py`
+- `render.yaml` explicitly sets `startCommand: gunicorn main:app ...`
+- If Render still uses the fallback, `app.py` satisfies `gunicorn app:app` as a safety net
+
 ## Deployment Steps (Render)
 
-### 1. Push to GitHub
-Ensure all your local changes are pushed to your GitHub repository:
-```bash
-git add .
-git commit -m "Final deployment configuration"
-git push origin main
-```
+### Backend (FastAPI)
+1. Push this repo to GitHub.
+2. In Render, create a **Blueprint** from this repository.
+3. Render reads `render.yaml` and creates:
+   - `navya-db` (PostgreSQL)
+   - `navya-backend` (Python Web Service)
+4. Backend build:
+   - Build command: `pip install -r requirements.txt`
+   - Start command: `gunicorn main:app --worker-class uvicorn.workers.UvicornWorker --workers 2 --bind 0.0.0.0:$PORT`
+5. Backend env vars are wired automatically via the Blueprint (`DATABASE_URL` from the database).
 
-### 2. Create Blueprint on Render
-1. Go to your [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** -> **Blueprint**.
-3. Select this repository.
-4. Render will automatically read `render.yaml` and prompt you to create:
-   - A PostgreSQL database.
-   - A Python Web Service (Backend).
-   - A Static Site (Frontend).
-5. Click **Apply**.
+### Frontend (React Static Site)
+1. In Render, create a **Static Site**.
+2. Connect the same repository.
+3. Configure:
+   - **Build Command**: `npm install --prefix frontend && npm run build --prefix frontend`
+   - **Publish Directory**: `frontend/build`
+4. Add environment variable:
+   - `REACT_APP_API_URL` = the host of `navya-backend` (Render injects this automatically in `render.yaml`)
 
-### 3. Initialize Database (Seeding)
-Once the `navya-backend` service status is **Live**:
-1. Open the `navya-backend` service in your Render dashboard.
-2. Click **Shell** in the left menu.
-3. Run the following command to populate the 120+ clinical questions:
+### Database Seeding
+Once `navya-backend` is **Live**:
+1. Open the service in the Render dashboard.
+2. Open **Shell**.
+3. Run:
    ```bash
    python seed.py
    ```
-
-## Production Security Notes
-- The API uses CORS settings to allow communication between the two Render services.
-- The `DATABASE_URL` is automatically wired via the Blueprint.
-- The React app uses the `REACT_APP_API_URL` environment variable to locate the backend.
+This creates all roles and clinical interview questions.
 
 ## Local Development
-If you want to run this locally:
-1. **Backend**: 
+1. **Backend**:
    ```bash
    pip install -r requirements.txt
    uvicorn main:app --reload
@@ -54,3 +57,8 @@ If you want to run this locally:
    npm install
    npm start
    ```
+
+## Production Security Notes
+- `DATABASE_URL` is injected by Render from the provisioned PostgreSQL database.
+- Frontend talks to backend via `REACT_APP_API_URL`.
+- CORS is configured to allow all origins for simplicity; restrict in production.
