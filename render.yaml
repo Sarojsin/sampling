@@ -20,7 +20,7 @@ services:
     name: navya-frontend
     env: static
     buildCommand: npm install --prefix frontend && npm run build --prefix frontend
-    publishPath: frontend/build
+    publishDir: frontend/build
     envVars:
       - key: REACT_APP_API_URL
         fromService:
