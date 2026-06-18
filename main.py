@@ -4,8 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import crud, schemas, models
 from database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Navya Survey API")
 
 app.add_middleware(
@@ -16,10 +14,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Seed minimal roles on startup so data is always available on fresh deploys
+# Create tables after the app starts and env vars are loaded
+from sqlalchemy import text
+
 def _seed():
     db = SessionLocal()
     try:
+        models.Base.metadata.create_all(bind=engine)
         existing = db.query(models.Role).count()
         if existing == 0:
             for name in ["nurse", "doctor", "women18plus", "under18"]:
