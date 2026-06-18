@@ -15,11 +15,12 @@ services:
         fromDatabase:
           name: navya-db
           property: connectionString
+
   - type: web
     name: navya-frontend
-    env: static
+    runtime: static                   # <--- FIXED: Changed from 'env: static'
     buildCommand: npm install --prefix frontend && npm run build --prefix frontend
-    publishDir: frontend/build
+    staticPublishPath: frontend/build # <--- FIXED: Changed from 'publishDir'
     envVars:
       - key: REACT_APP_API_URL
         fromService:
