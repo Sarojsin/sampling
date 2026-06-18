@@ -16,7 +16,7 @@ services:
           name: navya-db
           property: connectionString
 
-  - type: static
+  - type: web
     name: navya-frontend
     env: static
     buildCommand: npm install --prefix frontend && npm run build --prefix frontend
