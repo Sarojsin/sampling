@@ -11,10 +11,26 @@ app = FastAPI(title="Navya Survey API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Seed minimal roles on startup so data is always available on fresh deploys
+def _seed():
+    db = SessionLocal()
+    try:
+        existing = db.query(models.Role).count()
+        if existing == 0:
+            for name in ["nurse", "doctor", "women18plus", "under18"]:
+                db.add(models.Role(name=name))
+            db.commit()
+    finally:
+        db.close()
+
+@app.on_event("startup")
+def startup_event():
+    _seed()
 
 # Dependency
 def get_db():
