@@ -2,6 +2,7 @@ databases:
   - name: navya-db
     databaseName: navya_db
     user: navya_user
+    password: navya_pass
     plan: free
 
 services:
@@ -15,12 +16,17 @@ services:
         fromDatabase:
           name: navya-db
           property: connectionString
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: navya-backend
+          property: host
 
   - type: web
     name: navya-frontend
-    runtime: static                   # <--- FIXED: Changed from 'env: static'
+    env: static
     buildCommand: npm install --prefix frontend && npm run build --prefix frontend
-    staticPublishPath: frontend/build # <--- FIXED: Changed from 'publishDir'
+    publishDir: frontend/build
     envVars:
       - key: REACT_APP_API_URL
         fromService:
