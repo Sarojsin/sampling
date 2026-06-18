@@ -15,7 +15,6 @@ services:
         fromDatabase:
           name: navya-db
           property: connectionString
-
   - type: web
     name: navya-frontend
     env: static
@@ -26,4 +25,4 @@ services:
         fromService:
           type: web
           name: navya-backend
-          property: host
+          property: url
