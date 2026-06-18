@@ -16,12 +16,11 @@ services:
           name: navya-db
           property: connectionString
 
-  - type: web
+  - type: static
     name: navya-frontend
     env: static
-    rootContext: frontend
-    buildCommand: if "%WINDIR%"=="C:\WINDOWS" (npm install && npm run build && xcopy /Y public\h_redirects build\h_redirects /I) else (npm install && npm run build && cp public/h_redirects build/h_redirects)
-    publishPath: build
+    buildCommand: npm install --prefix frontend && npm run build --prefix frontend
+    publishPath: frontend/build
     envVars:
       - key: REACT_APP_API_URL
         fromService:
